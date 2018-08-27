@@ -1,5 +1,6 @@
-local function isarray(t)
+local function isarray(t, emptyIsObject)
 	if type(t)~='table' then return false end
+	if not next(t) then return not emptyIsObject end
 	local len = #t
 	for k,_ in pairs(t) do
 		if type(k)~='number' then
@@ -20,6 +21,8 @@ local function map(t,f)
 	return r
 end
 
+local keywords = {["and"]=1,["break"]=1,["do"]=1,["else"]=1,["elseif"]=1,["end"]=1,["false"]=1,["for"]=1,["function"]=1,["goto"]=1,["if"]=1,["in"]=1,["local"]=1,["nil"]=1,["not"]=1,["or"]=1,["repeat"]=1,["return"]=1,["then"]=1,["true"]=1,["until"]=1,["while"]=1}
+
 local function neatJSON(value, opts)
 	opts = opts or {}
 	if opts.wrap==nil  then opts.wrap = 80 end
@@ -36,11 +39,13 @@ local function neatJSON(value, opts)
 	opts.beforeColonN  = opts.beforeColonN  or opts.aroundColonN or opts.beforeColon or 0
 	opts.afterColonN   = opts.afterColonN   or opts.aroundColonN or opts.afterColon  or 0
 
+	local colon  = opts.lua and '=' or ':'
+	local array  = opts.lua and {'{','}'} or {'[',']'}
 	local apad   = string.rep(' ', opts.arrayPadding)
 	local opad   = string.rep(' ', opts.objectPadding)
 	local comma  = string.rep(' ',opts.beforeComma)..','..string.rep(' ',opts.afterComma)
-	local colon1 = string.rep(' ',opts.beforeColon1)..':'..string.rep(' ',opts.afterColon1)
-	local colonN = string.rep(' ',opts.beforeColonN)..':'..string.rep(' ',opts.afterColonN)
+	local colon1 = string.rep(' ',opts.beforeColon1)..colon..string.rep(' ',opts.afterColon1)
+	local colonN = string.rep(' ',opts.beforeColonN)..colon..string.rep(' ',opts.afterColonN)
 
 	local build -- set lower
 	local function rawBuild(o,indent)
@@ -55,20 +60,20 @@ local function neatJSON(value, opts)
 				return indent..tostring(o)
 			elseif kind=='string' then
 				return indent..string.format('%q', o):gsub('\\\n','\\n')
-			elseif isarray(o) then
-				if #o==0 then return indent.."[]" end
+			elseif isarray(o, opts.emptyTablesAreObjects) then
+				if #o==0 then return indent..array[1]..array[2] end
 				local pieces = map(o, function(v) return build(v,'') end)
-				local oneLine = indent..'['..apad..table.concat(pieces,comma)..apad..']'
+				local oneLine = indent..array[1]..apad..table.concat(pieces,comma)..apad..array[2]
 				if opts.wrap==false or #oneLine<=opts.wrap then return oneLine end
 				if opts.short then
 					local indent2 = indent..' '..apad;
 					pieces = map(o, function(v) return build(v,indent2) end)
-					pieces[1] = pieces[1]:gsub(indent2,indent..'['..apad, 1)
-					pieces[#pieces] = pieces[#pieces]..apad..']'
+					pieces[1] = pieces[1]:gsub(indent2,indent..array[1]..apad, 1)
+					pieces[#pieces] = pieces[#pieces]..apad..array[2]
 					return table.concat(pieces, ',\n')
 				else
 					local indent2 = indent..opts.indent
-					return indent..'[\n'..table.concat(map(o, function(v) return build(v,indent2) end), ',\n')..'\n'..(opts.indentLast and indent2 or indent)..']'
+					return indent..array[1]..'\n'..table.concat(map(o, function(v) return build(v,indent2) end), ',\n')..'\n'..(opts.indentLast and indent2 or indent)..array[2]
 				end
 			elseif kind=='table' then
 				if not next(o) then return indent..'{}' end
@@ -76,18 +81,30 @@ local function neatJSON(value, opts)
 				local sortedKV = {}
 				local sort = opts.sort or opts.sorted
 				for k,v in pairs(o) do
-					sortedKV[#sortedKV+1] = {k,v}
-					if sort==true then
-						sortedKV[#sortedKV][3] = k
-					elseif type(sort)=='function' then
-						sortedKV[#sortedKV][3] = sort(k,v,o)
+					local kind = type(k)
+					if kind=='string' or kind=='number' then
+						sortedKV[#sortedKV+1] = {k,v}
+						if sort==true then
+							sortedKV[#sortedKV][3] = tostring(k)
+						elseif type(sort)=='function' then
+							sortedKV[#sortedKV][3] = sort(k,v,o)
+						end
 					end
 				end
 				if sort then table.sort(sortedKV, function(a,b) return a[3]<b[3] end) end
-
-				local keyvals=map(sortedKV, function(kv) return {string.format('%q',kv[1]), build(kv[2],'')} end)
-				if sort then table.sort(keyvals, function(kv1,kv2) return kv1[1]<kv2[1] end) end
-				keyvals = table.concat(map(keyvals, function(kv) return table.concat(kv,colon1) end), comma)
+				local keyvals
+				if opts.lua then
+					keyvals=map(sortedKV, function(kv)
+						if type(kv[1])=='string' and not keywords[kv[1]] and string.match(kv[1],'^[%a_][%w_]*$') then
+							return string.format('%s%s%s',kv[1],colon1,build(kv[2],''))
+						else
+							return string.format('[%q]%s%s',kv[1],colon1,build(kv[2],''))
+						end
+					end)
+				else
+					keyvals=map(sortedKV, function(kv) return string.format('%q%s%s',kv[1],colon1,build(kv[2],'')) end)
+				end
+				keyvals=table.concat(keyvals, comma)
 				local oneLine = indent.."{"..opad..keyvals..opad.."}"
 				if opts.wrap==false or #oneLine<opts.wrap then return oneLine end
 				if opts.short then
@@ -110,17 +127,10 @@ local function neatJSON(value, opts)
 					end
 					return table.concat(keyvals, ',\n')..opad..'}'
 				else
-					local keyvals,i={},0
-					-- TODO: share this code with sortedKV above
-					for k,v in pairs(o) do
-						keyvals[#keyvals+1] = {indent..opts.indent..string.format('%q',k), v}
-						if sort==true then
-							keyvals[#keyvals][3] = k
-						elseif type(sort)=='function' then
-							keyvals[#keyvals][3] = sort(k,v,o)
-						end
+					local keyvals={}
+					for i,kv in ipairs(sortedKV) do
+						keyvals[i] = {indent..opts.indent..string.format('%q',kv[1]), kv[2]}
 					end
-					if sort then table.sort(keyvals, function(a,b) return a[2]<b[2] end) end
 					if opts.aligned then
 						local longest = math.max(table.unpack(map(keyvals, function(kv) return #kv[1] end)))
 						local padrt   = '%-'..longest..'s'

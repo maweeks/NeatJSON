@@ -67,9 +67,7 @@ function neatJSON(value,opts){
 				}
 				if (!sortedKV.length) return indent+'{}';
 				if (sort) sortedKV = sortedKV.sort(function(a,b){ a=a[2]; b=b[2]; return a<b?-1:a>b?1:0 });
-				var keyvals=sortedKV.map(function(kv){ return [JSON.stringify(kv[0]), build(kv[1],'')] });
-				if (opts.sorted) keyvals = keyvals.sort(function(kv1,kv2){ kv1=kv1[0]; kv2=kv2[0]; return kv1<kv2?-1:kv1>kv2?1:0 });
-				keyvals = keyvals.map(function(kv){ return kv.join(colon1) }).join(comma);
+				var keyvals=sortedKV.map(function(kv){ return [JSON.stringify(kv[0]), build(kv[1],'')].join(colon1) }).join(comma);
 				var oneLine = indent+"{"+opad+keyvals+opad+"}";
 				if (opts.wrap===false || oneLine.length<opts.wrap) return oneLine;
 				if (opts.short){
@@ -89,14 +87,7 @@ function neatJSON(value,opts){
 					}
 					return keyvals.join(',\n') + opad + '}';
 				}else{
-					var keyvals=[],i=0;
-					// TODO: share this code with sortedKV above
-					for (var k in o){
-						var kv = keyvals[i++] = [indent+opts.indent+JSON.stringify(k),o[k]];
-						if (sort===true) kv[2] = k;
-						else if (typeof sort==='function') kv[2]=sort(k,o[k],o);
-					}
-					if (sort) keyvals = keyvals.sort(function(a,b){ a=a[2]; b=b[2]; return a<b?-1:a>b?1:0 });
+					var keyvals=sortedKV.map(function(kvs){ kvs[0] = indent+opts.indent+JSON.stringify(kvs[0]); return kvs });
 					if (opts.aligned){
 						var longest = 0;
 						for (var i=keyvals.length;i--;) if (keyvals[i][0].length>longest) longest = keyvals[i][0].length;
