@@ -45,6 +45,7 @@ TESTS = [
 		{ json:"[1,\n 2,\n 3,\n 4,\n [5,\n  6,\n  7,\n  [8,\n   9,\n   10],\n  11,\n  12]]", opts:{short:true,wrap:true} },
 		{ json:"[1,\n 2,\n 3,\n 4,\n [5,\n  6,\n  7,\n  [8,\n   9,\n   10],\n  11,\n  12]]", opts:{short:true,wrap:true,after_comma:1} },
 		{ json:"[ 1,\n  2,\n  3,\n  4,\n  [ 5,\n    6,\n    7,\n    [ 8,\n      9,\n      10 ],\n    11,\n    12 ] ]", opts:{short:true,wrap:true,array_padding:1} },
+		{ json:"[ 1,\n  2,\n  3,\n  4,\n  [ 5,\n    6,\n    7,\n    [ 8,9,10 ],\n    11,\n    12 ] ]", opts:{short:true,wrap:true,array_padding:1, flatten_simple_arrays:true } },
 	]},
 
 	{value:[1,2,3], tests:[
@@ -174,7 +175,7 @@ TESTS = [
 		{ json:'{"a":{"b":{"c":{"d":{"e":{"f":{"g":{"h":{"i":{"j":{"k":{"l":{"m":1}}}}}}}}}}}}}', opts:{wrap:false} },
 		{ json:'{"a":{"b":{"c":{"d":{"e":{"f":{"g":{"h":{"i":{"j":{"k":{"l":{"m":1}}}}}}}}}}}}}', opts:{wrap:1,short:true} },
 		{ json:"{\n  \"a\":{\n    \"b\":{\n      \"c\":{\n        \"d\":{\n          \"e\":{\n            \"f\":{\n              \"g\":{\n                \"h\":{\n                  \"i\":{\n                    \"j\":{\n                      \"k\":{\n                        \"l\":{\n                          \"m\":1\n                        }\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}", opts:{wrap:1} },
-	]}, 
+	]},
 
 	# Issue #27
 	{value:{'b'=>2, a:1}, tests:[
@@ -185,4 +186,3 @@ TESTS = [
 		{json:'{"a":1,"b":2}', opts:{wrap:false, sort:true}},
 	]},
 ]
-

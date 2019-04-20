@@ -34,7 +34,6 @@ Pretty-print your JSON in Ruby or JavaScript with more power than is provided by
 * JavaScript (web): Clone the GitHub repo and copy `javascript/neatjson.js`
 * Node.js: `npm install neatjson`
 
-
 ## Usage
 
 **Ruby**:
@@ -52,7 +51,6 @@ json = JSON.neat_generate( value, options )
     var json = neatJSON( value, options );
 </script>
 ~~~
-
 
 **Node.js**:
 
@@ -172,28 +170,29 @@ json = JSON.neat_generate my_value, array_padding:1, after_comma:1, before_colon
 var json = neatJSON( myValue, { arrayPadding:1, afterComma:1, beforeColonN:2, indentLast:true } );
 ~~~
 
-* `wrap`           — Maximum line width before wrapping. Use `false` to never wrap, `true` to always wrap. default:`80`
-* `indent`         — Whitespace used to indent each level when wrapping. default:`"  "` (two spaces)
-* `indent_last`    — Indent the closing bracket/brace for arrays and objects? default:`false`
-* `short`          — Put opening brackets on the same line as the first value, closing brackets on the same line as the last? default:`false`
+* `wrap`                  — Maximum line width before wrapping. Use `false` to never wrap, `true` to always wrap. default:`80`
+* `indent`                — Whitespace used to indent each level when wrapping. default:`"  "` (two spaces)
+* `indent_last`           — Indent the closing bracket/brace for arrays and objects? default:`false`
+* `short`                 — Put opening brackets on the same line as the first value, closing brackets on the same line as the last? default:`false`
   * _This causes the `indent` and `indent_last` options to be ignored, instead basing indentation on array and object padding._
-* `sort`           — Sort objects' keys in alphabetical order (`true`), or supply a lambda for custom sorting. default:`false`
+* `sort`                  — Sort objects' keys in alphabetical order (`true`), or supply a lambda for custom sorting. default:`false`
   * If you supply a lambda to the `sort` option, it will be passed three values: the (string) name of the key, the associated value, and the object being sorted, e.g. `{ sort:->(key,value,hash){ Float(value) rescue Float::MAX } }`
-* `aligned`        — When wrapping objects, line up the colons (per object)? default:`false`
-* `decimals`       — Decimal precision for non-integer numbers; use `false` to keep values precise. default:`false`
-* `array_padding`  — Number of spaces to put inside brackets for arrays. default:`0`
-* `object_padding` — Number of spaces to put inside braces for objects.  default:`0`
-* `padding`        — Shorthand to set both `array_padding` and `object_padding`. default:`0`
-* `before_comma`   — Number of spaces to put before commas (for both arrays and objects). default:`0`
-* `after_comma`    — Number of spaces to put after commas (for both arrays and objects). default:`0`
-* `around_comma`   — Shorthand to set both `before_comma` and `after_comma`. default:`0`
-* `before_colon_1` — Number of spaces before a colon when the object is on one line. default:`0`
-* `after_colon_1`  — Number of spaces after a colon when the object is on one line. default:`0`
-* `before_colon_n` — Number of spaces before a colon when the object is on multiple lines. default:`0`
-* `after_colon_n`  — Number of spaces after a colon when the object is on multiple lines. default:`0`
-* `before_colon`   — Shorthand to set both `before_colon_1` and `before_colon_n`. default:`0`
-* `after_colon`    — Shorthand to set both `after_colon_1` and `after_colon_n`. default:`0`
-* `around_colon`   — Shorthand to set both `before_colon` and `after_colon`. default:`0`
+* `aligned`               — When wrapping objects, line up the colons (per object)? default:`false`
+* `decimals`              — Decimal precision for non-integer numbers; use `false` to keep values precise. default:`false`
+* `array_padding`         — Number of spaces to put inside brackets for arrays. default:`0`
+* `object_padding`        — Number of spaces to put inside braces for objects.  default:`0`
+* `padding`               — Shorthand to set both `array_padding` and `object_padding`. default:`0`
+* `before_comma`          — Number of spaces to put before commas (for both arrays and objects). default:`0`
+* `after_comma`           — Number of spaces to put after commas (for both arrays and objects). default:`0`
+* `around_comma`          — Shorthand to set both `before_comma` and `after_comma`. default:`0`
+* `before_colon_1`        — Number of spaces before a colon when the object is on one line. default:`0`
+* `after_colon_1`         — Number of spaces after a colon when the object is on one line. default:`0`
+* `before_colon_n`        — Number of spaces before a colon when the object is on multiple lines. default:`0`
+* `after_colon_n`         — Number of spaces after a colon when the object is on multiple lines. default:`0`
+* `before_colon`          — Shorthand to set both `before_colon_1` and `before_colon_n`. default:`0`
+* `after_colon`           — Shorthand to set both `after_colon_1` and `after_colon_n`. default:`0`
+* `around_colon`          — Shorthand to set both `before_colon` and `after_colon`. default:`0`
+* `flatten_simple_arrays` — Stops wrapping for simple arrays (no Arrays or Hashes inside)
 
 You may omit the 'value' and/or 'object' parameters in your `sort` lambda if desired. For example:
 
@@ -235,7 +234,6 @@ neatJSON( obj, { sort:function(k,v){ return countByValue[v] } } );         // so
 
 _Note that the JavaScript version of NeatJSON does not provide a mechanism for cascading sort in the same manner as Ruby._
 
-
 ## License & Contact
 
 NeatJSON is copyright ©2015–2017 by Gavin Kistner and is released under
@@ -252,7 +250,6 @@ For other communication you can [email the author directly](mailto:!@phrogz.net?
 * Detect circular references.
 * Possibly allow illegal JSON values like `NaN` or `Infinity`.
 * Possibly allow "JSON5" output (legal identifiers unquoted, etc.)
-
 
 ## HISTORY
 
